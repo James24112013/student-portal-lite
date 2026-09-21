@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>Northstar | Student Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span class="brand-mark">N</span><span>northstar</span></div>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="nav-item active" data-section="Overview"><span class="icon">⌂</span>Overview</button>
+        <button class="nav-item" data-section="Timetable"><span class="icon">▦</span>Timetable</button>
+        <button class="nav-item" data-section="Notices"><span class="icon">◉</span>Notices <b class="nav-count">3</b></button>
+        <button class="nav-item" data-section="Grades"><span class="icon">◒</span>Grades</button>
+        <button class="nav-item" data-section="Calendar"><span class="icon">□</span>Calendar</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="nav-item"><span class="icon">⚙</span>Settings</button>
+        <div class="profile-mini"><div class="avatar avatar-purple">JS</div><div><strong>Jordan Smith</strong><small>Year 10 · 10A</small></div><span class="more">•••</span></div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="menu-button" id="menuButton" aria-label="Open menu">☰</button>
+        <div class="breadcrumb"><span>Student portal</span><b>/</b><strong id="pageTitle">Overview</strong></div>
+        <div class="top-actions"><button class="icon-button" title="Search">⌕</button><button class="icon-button notification" title="Notifications">♢<i></i></button><div class="avatar avatar-purple">JS</div></div>
+      </header>
+
+      <div class="content" id="content">
+        <section class="welcome-row">
+          <div><p class="eyebrow">MONDAY, 21 SEPTEMBER 2026</p><h1>Good morning, Jordan <span>✦</span></h1><p class="muted">Here’s what’s happening at school today.</p></div>
+          <button class="primary-button" id="calendarButton">＋ Add to calendar</button>
+        </section>
+
+        <section class="hero-grid">
+          <article class="hero-card">
+            <div class="hero-copy"><span class="status-pill">● School day</span><h2>Your day,<br /><em>at a glance.</em></h2><p>Stay on top of your school life, all in one place.</p><button class="text-button" data-section="Timetable">View timetable <span>→</span></button></div>
+            <div class="hero-orbit"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="planet planet-one"></div><div class="planet planet-two"></div><div class="spark">✦</div></div>
+          </article>
+          <article class="quote-card"><div class="quote-icon">“</div><blockquote>Small steps every day<br />add up to big results.</blockquote><p>— Unknown</p><div class="dots"><i></i><i class="selected"></i><i></i></div></article>
+        </section>
+
+        <section class="section-heading"><div><h2>Today</h2><p class="muted">Monday, 21 September</p></div><button class="link-button" data-section="Timetable">Full timetable <span>→</span></button></section>
+        <section class="today-grid">
+          <article class="panel schedule-panel"><div class="panel-top"><h3>Schedule</h3><span class="live-dot">● Live</span></div><div class="class current"><div class="time">09:00<br /><small>10:00</small></div><div class="class-line purple"></div><div class="class-info"><strong>Mathematics</strong><span>Room 204 · Ms. Patel</span></div><span class="class-badge">NOW</span></div><div class="class"><div class="time">10:15<br /><small>11:15</small></div><div class="class-line blue"></div><div class="class-info"><strong>English Literature</strong><span>Room 118 · Mr. Thompson</span></div></div><div class="class"><div class="time">11:30<br /><small>12:30</small></div><div class="class-line orange"></div><div class="class-info"><strong>Biology</strong><span>Lab 2 · Dr. Chen</span></div></div><div class="class"><div class="time">13:30<br /><small>14:30</small></div><div class="class-line pink"></div><div class="class-info"><strong>History</strong><span>Room 305 · Mrs. Wilson</span></div></div></article>
+          <article class="panel notice-panel"><div class="panel-top"><h3>Latest notices</h3><button class="small-link" data-section="Notices">See all</button></div><div class="notice featured"><div class="notice-symbol yellow">★</div><div><span class="notice-label">STUDENT LIFE · 2 HRS AGO</span><strong>Winter concert auditions</strong><p>Auditions are open this week in the music hall.</p></div><span class="arrow">↗</span></div><div class="notice"><div class="notice-symbol green">✓</div><div><span class="notice-label">YEAR 10 · YESTERDAY</span><strong>Science museum trip</strong><p>Permission slips are due Friday.</p></div><span class="arrow">↗</span></div><div class="notice"><div class="notice-symbol purple">●</div><div><span class="notice-label">GENERAL · 2 DAYS AGO</span><strong>Library hours updated</strong><p>Now open until 5:30 pm on weekdays.</p></div><span class="arrow">↗</span></div></article>
+        </section>
+
+        <section class="section-heading lower-heading"><div><h2>Your snapshot</h2><p class="muted">Keep an eye on your progress.</p></div></section>
+        <section class="snapshot-grid"><article class="panel progress-card"><div class="panel-top"><h3>Current grades</h3><button class="small-link" data-section="Grades">View grades</button></div><div class="grade-row"><div class="subject-icon purple-bg">M</div><div class="grade-detail"><strong>Mathematics</strong><span>Algebra &amp; functions</span></div><b class="grade excellent">A</b></div><div class="grade-row"><div class="subject-icon blue-bg">E</div><div class="grade-detail"><strong>English</strong><span>Creative writing</span></div><b class="grade good">B+</b></div><div class="grade-row"><div class="subject-icon orange-bg">B</div><div class="grade-detail"><strong>Biology</strong><span>Cells &amp; systems</span></div><b class="grade excellent">A-</b></div></article><article class="panel week-card"><div class="panel-top"><h3>This week</h3><span class="week-label">SEP 21—27</span></div><div class="week-days"><div><span>M</span><i class="today-dot"></i></div><div><span>T</span><i></i></div><div><span>W</span><i></i></div><div><span>T</span><i></i></div><div><span>F</span><i></i></div><div><span>S</span><i class="empty"></i></div><div><span>S</span><i class="empty"></i></div></div><div class="week-footer"><span><b>4</b> classes today</span><button class="small-link" data-section="Calendar">Open calendar →</button></div></article></section>
+        <footer><span>Northstar Student Portal</span><span>Need help? <a href="mailto:office@northstar.school">Contact the office</a></span></footer>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast">Calendar action ready ✦</div>
+  <script src="app.js"></script>
+</body>
+</html>
