@@ -1,28 +1,278 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Northstar Student Portal</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div id="studentLogin" class="auth-screen">
-    <form id="studentLoginForm" class="auth-card"><div class="brand-mark">N</div><p class="eyebrow">NORTHSTAR</p><h1>Student sign in</h1><p>Enter the email your school gave you.</p><label>Email<input id="studentEmail" type="email" required placeholder="you@school.edu.au"></label><button class="primary-button" type="submit">Sign in</button><small>Ask your administrator to add your email if it is not recognised.</small><a href="admin.html">Teacher/Admin Portal</a></form>
-  </div>
-  <div class="portal-shell" id="portalApp" hidden>
-    <aside class="sidebar" id="sidebar"><div class="app-brand"><div class="brand-mark">N</div><div><div class="brand-name">Northstar</div><div class="brand-sub">Student portal</div></div></div>
-      <nav class="main-nav" aria-label="Main navigation">
-        <button class="nav-item active" data-section="Overview"><span class="nav-icon">⌂</span><span>Overview</span></button><button class="nav-item" data-section="Timetable"><span class="nav-icon">◫</span><span>Timetable</span></button><button class="nav-item" data-section="Courses"><span class="nav-icon">◌</span><span>Courses</span></button><button class="nav-item" data-section="Notices"><span class="nav-icon">◍</span><span>Notices</span><span class="nav-badge">3</span></button><button class="nav-item" data-section="Reports"><span class="nav-icon">☰</span><span>Reports</span></button><button class="nav-item" data-section="Calendar"><span class="nav-icon">◧</span><span>Calendar</span></button><button class="nav-item" data-section="Direct messages"><span class="nav-icon">✉</span><span>Direct messages</span><span class="nav-badge">1</span></button>
-      </nav>
-      <div class="sidebar-footer"><button class="nav-item" data-section="Settings"><span class="nav-icon">⚙</span><span>Settings</span></button><button class="nav-item logout-button"><span class="nav-icon">↪</span><span>Sign out</span></button><div class="user-panel"><div class="user-avatar" id="sideInitials">JS</div><div><strong id="sideName">Jordan Smith</strong><small id="sideDetails">Year 10 · 10A</small></div></div></div>
-    </aside>
-    <main class="main-area"><header class="topbar"><div class="topbar-left"><button class="mobile-menu" id="menuButton">☰</button><div class="crumbs"><span>Student portal</span><span>/</span><strong id="pageTitle">Dashboard</strong></div></div><div class="topbar-right"><button class="icon-button" data-action="search" aria-label="Search">⌕</button><button class="icon-button notification-button" data-action="notifications" aria-label="Notifications">🔔<span class="dot"></span></button><div class="mini-avatar" id="topInitials">JS</div></div></header>
-      <div class="content-grid"><div class="content-main"><section class="welcome-card panel"><div><p class="eyebrow" id="dateLabel"></p><h1 id="greeting">Good morning</h1><p class="subtitle">Your school dashboard is ready for today.</p></div><button class="primary-button" data-action="calendar">+ Add to calendar</button></section>
-        <section class="today-panel panel"><div class="section-header"><div><p class="section-kicker">Today</p><h2>Schedule</h2></div><button class="text-link" data-section="Timetable">View timetable</button></div><div class="class-list" id="classList"></div></section>
-        <section class="insights-grid"><article class="panel metric-card"><div class="section-header compact"><div><p class="section-kicker">Progress</p><h2>Current grades</h2></div><button class="text-link" data-action="grades">All results</button></div><div class="grade-row"><div class="grade-icon purple">M</div><div class="grade-info"><strong>Mathematics</strong><span>Algebra & functions</span></div><b class="grade-value green">A</b></div><div class="grade-row"><div class="grade-icon blue">E</div><div class="grade-info"><strong>English</strong><span>Creative writing</span></div><b class="grade-value amber">B+</b></div></article><article class="panel metric-card"><div class="section-header compact"><div><p class="section-kicker">Planner</p><h2>Key dates</h2></div><button class="text-link" data-section="Calendar">Calendar</button></div><div class="date-stack"><div class="date-item"><span class="date-tag purple">Tue</span><div><strong>Science practical</strong><small>Lab 2 · 11:30am</small></div></div><div class="date-item"><span class="date-tag blue">Wed</span><div><strong>Essay draft</strong><small>English · 3:00pm</small></div></div><div class="date-item"><span class="date-tag orange">Fri</span><div><strong>Sports carnival</strong><small>Oval · 9:00am</small></div></div></div></article></section></div>
-        <aside class="content-side"><section class="panel message-card"><div class="section-header compact"><div><p class="section-kicker">Notices</p><h2>Latest</h2></div><button class="text-link" data-section="Notices">View all</button></div><div class="notice-item" data-action="notice"><div class="notice-icon yellow">★</div><div><small>Student life · 2h ago</small><strong>Winter concert auditions</strong></div></div><div class="notice-item" data-action="notice"><div class="notice-icon green">✓</div><div><small>Year 10 · Yesterday</small><strong>Science museum trip</strong></div></div><div class="notice-item" data-action="notice"><div class="notice-icon pink">●</div><div><small>General · 2d ago</small><strong>Library hours updated</strong></div></div></section><section class="panel focus-card"><div class="section-header compact"><div><p class="section-kicker">Today</p><h2>Focus</h2></div></div><div class="focus-box"><div class="focus-graph"><span class="bar a"></span><span class="bar b"></span><span class="bar c"></span><span class="bar d"></span></div><div class="focus-copy"><strong>82% on track</strong><small>Keep up your momentum this afternoon.</small></div></div></section></aside></div>
-    </main>
-  </div><div id="toast" class="toast"></div><script src="app.js"></script>
-</body></html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#d92d2d" />
+    <title>Northstar Student Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="northstar-page">
+    <div class="browser-window">
+      <div class="browser-topbar">
+        <div class="browser-toolbar-left">
+          <div class="nav-button light">←</div>
+          <div class="nav-button light">→</div>
+          <div class="nav-button light">⟳</div>
+        </div>
+
+        <div class="browser-address-wrap">
+          <div class="browser-lock">🔒</div>
+          <div class="browser-address">localhost:8000/index.html</div>
+        </div>
+
+        <div class="browser-toolbar-right">
+          <div class="nav-button small">☆</div>
+          <div class="nav-button small">⟲</div>
+          <div class="nav-button small">⋯</div>
+        </div>
+      </div>
+
+      <div class="browser-content">
+        <div id="studentLogin" class="auth-screen">
+          <div class="login-shell">
+            <div class="brand-mark">N</div>
+            <div class="northstar-wording">NORTHSTAR</div>
+
+            <h1 class="login-title">Student sign in</h1>
+
+            <p class="login-subtitle">Enter the email your school gave you.</p>
+
+            <form id="studentLoginForm" class="login-form">
+              <div class="login-row">
+                <label class="login-label" for="studentEmail">Email</label>
+                <div class="input-inline">
+                  <input id="studentEmail" type="email" placeholder="you@school.edu.au" required />
+                  <button class="signin-button" type="submit">Sign in</button>
+                </div>
+              </div>
+
+              <div class="login-footer">
+                <span>Ask your administrator to add your email if it is not recognised.</span>
+                <a href="admin.html">Teacher/Admin Portal</a>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="portalApp" class="portal-shell" hidden>
+          <aside class="sidebar" id="sidebar">
+            <div class="app-brand">
+              <div class="brand-mark">N</div>
+              <div>
+                <div class="brand-name">Northstar</div>
+                <div class="brand-sub">Student portal</div>
+              </div>
+            </div>
+
+            <nav class="main-nav" aria-label="Main navigation">
+              <button class="nav-item active" data-section="Overview"><span class="nav-icon">⌂</span><span>Overview</span></button>
+              <button class="nav-item" data-section="Timetable"><span class="nav-icon">◫</span><span>Timetable</span></button>
+              <button class="nav-item" data-section="Courses"><span class="nav-icon">◌</span><span>Courses</span></button>
+              <button class="nav-item" data-section="Notices"><span class="nav-icon">◍</span><span>Notices</span><span class="nav-badge">3</span></button>
+              <button class="nav-item" data-section="Reports"><span class="nav-icon">☰</span><span>Reports</span></button>
+              <button class="nav-item" data-section="Calendar"><span class="nav-icon">◧</span><span>Calendar</span></button>
+              <button class="nav-item" data-section="Direct messages"><span class="nav-icon">✉</span><span>Direct messages</span><span class="nav-badge">1</span></button>
+            </nav>
+
+            <div class="sidebar-footer">
+              <button class="nav-item" data-section="Settings"><span class="nav-icon">⚙</span><span>Settings</span></button>
+              <button class="nav-item logout-button"><span class="nav-icon">↪</span><span>Sign out</span></button>
+              <div class="user-panel">
+                <div class="user-avatar" id="sideInitials">JS</div>
+                <div>
+                  <strong id="sideName">Jordan Smith</strong>
+                  <small id="sideDetails">Year 10 · 10A</small>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <main class="main-area">
+            <header class="topbar">
+              <div class="topbar-left">
+                <button class="mobile-menu" id="menuButton" aria-label="Open menu">☰</button>
+                <div class="crumbs">
+                  <span>Student portal</span>
+                  <span class="divider">/</span>
+                  <strong id="pageTitle">Dashboard</strong>
+                </div>
+              </div>
+
+              <div class="topbar-right">
+                <button class="icon-button" data-action="search" aria-label="Search">⌕</button>
+                <button class="icon-button notification-button" data-action="notifications" aria-label="Notifications">🔔<span class="dot"></span></button>
+                <div class="mini-avatar" id="topInitials">JS</div>
+              </div>
+            </header>
+
+            <div class="content-grid">
+              <div class="content-main">
+                <section class="welcome-card panel">
+                  <div class="welcome-copy">
+                    <p class="eyebrow" id="dateLabel"></p>
+                    <h1 id="greeting">Good morning</h1>
+                    <p class="subtitle">Your school dashboard is ready for today.</p>
+                  </div>
+                  <button class="primary-button" data-action="calendar">+ Add to calendar</button>
+                </section>
+
+                <section class="today-panel panel">
+                  <div class="section-header">
+                    <div>
+                      <p class="section-kicker">Today</p>
+                      <h2>Schedule</h2>
+                    </div>
+                    <button class="text-link" data-section="Timetable">View timetable</button>
+                  </div>
+                  <div id="classList" class="class-list"></div>
+                </section>
+
+                <section class="insights-grid">
+                  <article class="panel metric-card">
+                    <div class="section-header compact">
+                      <div>
+                        <p class="section-kicker">Progress</p>
+                        <h2>Current grades</h2>
+                      </div>
+                      <button class="text-link" data-action="grades">All results</button>
+                    </div>
+
+                    <div class="grade-row">
+                      <div class="grade-icon purple">M</div>
+                      <div class="grade-info">
+                        <strong>Mathematics</strong>
+                        <span>Algebra & functions</span>
+                      </div>
+                      <span class="grade-value green">A</span>
+                    </div>
+
+                    <div class="grade-row">
+                      <div class="grade-icon blue">E</div>
+                      <div class="grade-info">
+                        <strong>English</strong>
+                        <span>Creative writing</span>
+                      </div>
+                      <span class="grade-value amber">B+</span>
+                    </div>
+                  </article>
+
+                  <article class="panel metric-card">
+                    <div class="section-header compact">
+                      <div>
+                        <p class="section-kicker">Planner</p>
+                        <h2>Key dates</h2>
+                      </div>
+                      <button class="text-link" data-section="Calendar">Calendar</button>
+                    </div>
+
+                    <div class="date-stack">
+                      <div class="date-item">
+                        <span class="date-tag purple">Tue</span>
+                        <div>
+                          <strong>Science practical</strong>
+                          <small>Lab 2 · 11:30am</small>
+                        </div>
+                      </div>
+
+                      <div class="date-item">
+                        <span class="date-tag blue">Wed</span>
+                        <div>
+                          <strong>Essay draft</strong>
+                          <small>English · 3:00pm</small>
+                        </div>
+                      </div>
+
+                      <div class="date-item">
+                        <span class="date-tag orange">Fri</span>
+                        <div>
+                          <strong>Sports carnival</strong>
+                          <small>Oval · 9:00am</small>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                </section>
+              </div>
+
+              <aside class="content-side">
+                <section class="panel message-card">
+                  <div class="section-header compact">
+                    <div>
+                      <p class="section-kicker">Notices</p>
+                      <h2>Latest</h2>
+                    </div>
+                    <button class="text-link" data-section="Notices">View all</button>
+                  </div>
+
+                  <div class="notice-item" data-action="notice">
+                    <div class="notice-icon yellow">★</div>
+                    <div>
+                      <small>Student life · 2h ago</small>
+                      <strong>Winter concert auditions</strong>
+                    </div>
+                  </div>
+
+                  <div class="notice-item" data-action="notice">
+                    <div class="notice-icon green">✓</div>
+                    <div>
+                      <small>Year 10 · Yesterday</small>
+                      <strong>Science museum trip</strong>
+                    </div>
+                  </div>
+
+                  <div class="notice-item" data-action="notice">
+                    <div class="notice-icon pink">●</div>
+                    <div>
+                      <small>General · 2d ago</small>
+                      <strong>Library hours updated</strong>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="panel focus-card">
+                  <div class="section-header compact">
+                    <div>
+                      <p class="section-kicker">Today</p>
+                      <h2>Focus</h2>
+                    </div>
+                  </div>
+
+                  <div class="focus-box">
+                    <div class="focus-graph">
+                      <span class="bar a"></span>
+                      <span class="bar b"></span>
+                      <span class="bar c"></span>
+                      <span class="bar d"></span>
+                    </div>
+                    <div class="focus-copy">
+                      <strong>82% on track</strong>
+                      <small>Keep up your momentum this afternoon.</small>
+                    </div>
+                  </div>
+                </section>
+              </aside>
+            </div>
+          </main>
+        </div>
+      </div>
+
+      <div class="browser-dock">
+        <div class="dock-icon active">🪟</div>
+        <div class="dock-icon">📁</div>
+        <div class="dock-icon">🧭</div>
+        <div class="dock-icon">✦</div>
+        <div class="dock-icon">💬</div>
+        <div class="dock-icon">▣</div>
+        <div class="dock-icon">⌂</div>
+        <div class="dock-icon">⚙</div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
