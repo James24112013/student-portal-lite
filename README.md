@@ -1,27 +1,41 @@
-# Northstar Student Portal
+# Running Northstar locally
 
-## Student portal
-Open `index.html` for the student dashboard.
+The project is a static website, so Python’s built-in web server is enough.
 
-## Separate Administrator Portal
-Open `admin.html` for the teacher/admin timetable manager. It lets you:
+## Windows PowerShell or Command Prompt
 
-- select a student
-- add classes with day, time, subject, room, teacher, and colour
-- remove individual classes
-- clear a student's timetable
-
-The student and admin pages share timetable data through browser `localStorage` under the `northstar-timetables` key. This is suitable for local demos on one browser. A real multi-device school system still needs authentication and a hosted database such as Supabase.
-
-## Run locally
-
-Open `index.html` and `admin.html` directly, or run:
+1. Download and extract the repository.
+2. Open a terminal inside the extracted `student-portal-lite` folder. In File Explorer, right-click the folder and choose **Open in Terminal**.
+3. Run:
 
 ```bash
 python -m http.server 8000
 ```
 
-Then visit:
+If `python` is not recognised, try:
+
+```bash
+py -m http.server 8000
+```
+
+## macOS or Linux
+
+Open Terminal, move into the downloaded folder, and run:
+
+```bash
+cd ~/Downloads/student-portal-lite
+python3 -m http.server 8000
+```
+
+Replace `~/Downloads/student-portal-lite` with the actual folder location. `cd path/to/student-portal-lite` is only a placeholder; do not type that exact text unless that is really the folder path.
+
+## Open the pages
+
+Once the server is running, open:
 
 - Student portal: http://localhost:8000/index.html
-- Admin portal: http://localhost:8000/admin.html
+- Separate Admin Portal: http://localhost:8000/admin.html
+
+Keep the terminal open while using the site. Press **Ctrl+C** to stop the server.
+
+The admin and student pages share timetable changes in the same browser through localStorage. Add a class in `admin.html`, then refresh `index.html` to see it.

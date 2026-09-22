@@ -1,3 +1,5 @@
+const timetableKey = 'northstar-timetables';
+const studentId = 'jordan-smith';
 const greetings = [
   'Good morning, Jordan',
   'How is your day going, Jordan?',
@@ -13,68 +15,26 @@ const greetings = [
   'Good to have you here, Jordan'
 ];
 
-const greeting = document.getElementById('greeting');
-const dateLabel = document.getElementById('dateLabel');
-const mobileMenu = document.querySelector('.mobile-menu');
-const sidebar = document.querySelector('.sidebar');
-const navItems = document.querySelectorAll('.nav-item');
-const timetableKey = 'northstar-timetable';
+const $ = (selector) => document.querySelector(selector);
+const toast = $('#toast');
+const sidebar = $('#sidebar');
+const pageTitle = $('#pageTitle');
 
-function updateGreeting() {
-  const previous = sessionStorage.getItem('northstar-greeting');
-  const choices = greetings.filter((item) => item !== previous);
-  const next = choices[Math.floor(Math.random() * choices.length)];
-  sessionStorage.setItem('northstar-greeting', next);
-  if (greeting) greeting.textContent = next;
-
-  const formatted = new Intl.DateTimeFormat('en-AU', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  }).format(new Date());
-  if (dateLabel) dateLabel.textContent = formatted;
+function showToast(message) {
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
 }
 
-function getClasses() {
+function getStudentClasses() {
   try {
-    return JSON.parse(localStorage.getItem(timetableKey)) || [];
+    const all = JSON.parse(localStorage.getItem(timetableKey)) || {};
+    return Array.isArray(all[studentId]) ? all[studentId] : [];
   } catch {
     return [];
   }
-}
-
-function saveClasses(classes) {
-  localStorage.setItem(timetableKey, JSON.stringify(classes));
-}
-
-function showEmptyTimetable() {
-  const list = document.querySelector('.class-list');
-  if (!list) return;
-  const classes = getClasses();
-  list.innerHTML = '';
-
-  if (!classes.length) {
-    list.innerHTML = `
-      <div class="empty-timetable">
-        <div class="empty-calendar-icon">＋</div>
-        <strong>No classes have been added yet</strong>
-        <span>A teacher can create this student’s timetable from the Admin Portal.</span>
-        <button class="empty-admin-button" type="button">Open Admin Portal</button>
-      </div>`;
-    list.querySelector('button').addEventListener('click', openAdminPortal);
-    return;
-  }
-
-  classes.sort((a, b) => a.start.localeCompare(b.start)).forEach((item) => {
-    const lesson = document.createElement('div');
-    lesson.className = 'lesson';
-    lesson.innerHTML = `
-      <div class="lesson-time"><span>${item.start}</span><small>${item.end}</small></div>
-      <div class="lesson-bar ${item.colour || 'purple'}"></div>
-      <div class="lesson-details"><strong>${escapeHtml(item.subject)}</strong><span>${escapeHtml(item.room)} · ${escapeHtml(item.teacher)}</span></div>`;
-    list.appendChild(lesson);
-  });
 }
 
 function escapeHtml(value) {
@@ -83,88 +43,50 @@ function escapeHtml(value) {
   }[character]));
 }
 
-function openAdminPortal() {
-  let portal = document.getElementById('adminPortal');
-  if (portal) {
-    portal.classList.add('visible');
+function renderStudentTimetable() {
+  const list = $('.class-list');
+  if (!list) return;
+
+  const classes = getStudentClasses().sort((a, b) => `${a.day}${a.start}`.localeCompare(`${b.day}${b.start}`));
+  if (!classes.length) {
+    list.innerHTML = '<div class="empty-timetable"><div class="empty-calendar-icon">＋</div><strong>No classes have been added yet</strong><span>A teacher can create this student’s timetable from the separate Admin Portal.</span><a class="empty-admin-button" href="admin.html">Open Admin Portal</a></div>';
     return;
   }
 
-  portal = document.createElement('section');
-  portal.id = 'adminPortal';
-  portal.className = 'admin-portal';
-  portal.innerHTML = `
-    <div class="admin-card">
-      <div class="admin-heading">
-        <div><span class="admin-kicker">Teacher tools</span><h2>Admin Portal</h2><p>Edit a student’s timetable and create their classes.</p></div>
-        <button class="admin-close" type="button" aria-label="Close admin portal">×</button>
-      </div>
-      <form id="classForm" class="class-form">
-        <label>Student<select id="studentSelect"><option>Jordan Smith · Year 10A</option><option>Alex Morgan · Year 10B</option><option>Taylor Brown · Year 10A</option></select></label>
-        <label>Class name<input id="subjectInput" required placeholder="e.g. Mathematics" /></label>
-        <div class="form-row"><label>Start<input id="startInput" required type="time" /></label><label>End<input id="endInput" required type="time" /></label></div>
-        <div class="form-row"><label>Room<input id="roomInput" required placeholder="e.g. Room 204" /></label><label>Teacher<input id="teacherInput" required placeholder="e.g. Ms. Patel" /></label></div>
-        <label>Colour<select id="colourInput"><option value="purple">Purple</option><option value="blue">Blue</option><option value="orange">Orange</option><option value="pink">Pink</option></select></label>
-        <div class="admin-actions"><button class="secondary-button" id="clearClasses" type="button">Clear timetable</button><button class="primary-button" type="submit">Save class</button></div>
-      </form>
-      <div class="admin-note">Changes are saved in this browser and appear immediately on the student timetable.</div>
-    </div>`;
-  document.body.appendChild(portal);
-  portal.querySelector('.admin-close').addEventListener('click', () => portal.classList.remove('visible'));
-  portal.querySelector('#clearClasses').addEventListener('click', () => {
-    saveClasses([]);
-    showEmptyTimetable();
-    showToast('Timetable cleared');
-  });
-  portal.querySelector('#classForm').addEventListener('submit', (event) => {
-    event.preventDefault();
-    const classItem = {
-      subject: portal.querySelector('#subjectInput').value,
-      start: portal.querySelector('#startInput').value,
-      end: portal.querySelector('#endInput').value,
-      room: portal.querySelector('#roomInput').value,
-      teacher: portal.querySelector('#teacherInput').value,
-      colour: portal.querySelector('#colourInput').value
-    };
-    saveClasses([...getClasses(), classItem]);
-    showEmptyTimetable();
-    event.target.reset();
-    portal.classList.remove('visible');
-    showToast(`${classItem.subject} added to Jordan’s timetable`);
-  });
-  portal.classList.add('visible');
+  list.innerHTML = classes.map((item) => `
+    <div class="class ${item.day === 'Monday' ? 'current' : ''}">
+      <div class="time">${escapeHtml(item.start)}<br><small>${escapeHtml(item.end)}</small></div>
+      <div class="class-line ${escapeHtml(item.colour || 'purple')}"></div>
+      <div class="class-info"><strong>${escapeHtml(item.subject)}</strong><span>${escapeHtml(item.room)} · ${escapeHtml(item.teacher)} · ${escapeHtml(item.day)}</span></div>
+    </div>`).join('');
 }
 
-function showToast(message) {
-  let toast = document.getElementById('toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'toast';
-    toast.className = 'toast';
-    document.body.appendChild(toast);
+function updateGreeting() {
+  const greeting = $('#greeting') || document.querySelector('.welcome-row h1');
+  const dateLabel = $('#dateLabel') || document.querySelector('.eyebrow');
+  if (greeting) {
+    const previous = sessionStorage.getItem('northstar-greeting');
+    const choices = greetings.filter((item) => item !== previous);
+    const next = choices[Math.floor(Math.random() * choices.length)];
+    sessionStorage.setItem('northstar-greeting', next);
+    if (greeting.id === 'greeting') greeting.textContent = next;
+    else greeting.innerHTML = `${escapeHtml(next)} <span>✦</span>`;
   }
-  toast.textContent = message;
-  toast.classList.add('show');
-  clearTimeout(window.toastTimer);
-  window.toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  if (dateLabel) dateLabel.textContent = new Intl.DateTimeFormat('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
 }
 
-navItems.forEach((item) => {
-  item.addEventListener('click', () => {
-    navItems.forEach((button) => button.classList.remove('active'));
-    item.classList.add('active');
-    if (item.textContent.includes('Timetable')) showEmptyTimetable();
-  });
-});
+function selectSection(section) {
+  document.querySelectorAll('.nav-item[data-section]').forEach((item) => item.classList.toggle('active', item.dataset.section === section));
+  if (pageTitle) pageTitle.textContent = section;
+  if (section !== 'Overview') showToast(`${section} view is ready to explore ✦`);
+  sidebar?.classList.remove('open');
+}
 
-mobileMenu?.addEventListener('click', () => sidebar?.classList.toggle('open'));
-
-const adminButton = document.createElement('button');
-adminButton.className = 'admin-nav-button';
-adminButton.type = 'button';
-adminButton.innerHTML = '<span>▣</span> Admin Portal';
-adminButton.addEventListener('click', openAdminPortal);
-document.querySelector('.sidebar-footer')?.prepend(adminButton);
+document.querySelectorAll('[data-section]').forEach((item) => item.addEventListener('click', () => selectSection(item.dataset.section)));
+$('#menuButton')?.addEventListener('click', () => sidebar?.classList.toggle('open'));
+$('#calendarButton')?.addEventListener('click', () => showToast('Calendar action ready ✦'));
+$('.notification')?.addEventListener('click', () => showToast('You have 3 new notices'));
+window.addEventListener('storage', renderStudentTimetable);
 
 updateGreeting();
-showEmptyTimetable();
+renderStudentTimetable();
