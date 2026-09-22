@@ -1,15 +1,142 @@
-const DB='northstar-db';
-const defaultStudents=[{id:'jordan-smith',name:'Jordan Smith',email:'jordan@school.edu.au',year:'Year 10 · 10A',house:'Aurora',faction:'North',classes:[]}];
-const defaultTeachers=[{id:'admin',name:'Administrator',email:'admin@school.edu.au',role:'Administrator'}];
-const read=()=>{try{return JSON.parse(localStorage.getItem(DB))||{students:defaultStudents,teachers:defaultTeachers,timetables:{}}}catch{return {students:defaultStudents,teachers:defaultTeachers,timetables:{}}}};
-const write=(db)=>localStorage.setItem(DB,JSON.stringify(db));
-let db=read(); if(!db.students)db.students=defaultStudents;if(!db.teachers)db.teachers=defaultTeachers;if(!db.timetables)db.timetables={};write(db);
-const $=s=>document.querySelector(s), esc=v=>String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-const logged=JSON.parse(sessionStorage.getItem('northstar-student')||'null');
-function toast(message){const el=$('#toast');if(!el)return;el.textContent=message;el.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>el.classList.remove('show'),2400)}
-function renderStudent(student){$('#portalApp').hidden=false;$('#studentLogin').remove();$('#sideName').textContent=student.name;$('#sideDetails').textContent=`${student.year} · ${student.house||'No house'}`;const initials=student.name.split(' ').map(x=>x[0]).join('');$('#sideInitials').textContent=initials;$('#topInitials').textContent=initials;$('#greeting').textContent=`Welcome back, ${student.name.split(' ')[0]}`;$('#dateLabel').textContent=new Intl.DateTimeFormat('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date());const classes=db.timetables[student.id]||student.classes||[];$('#classList').innerHTML=classes.length?classes.slice().sort((a,b)=>`${a.day}${a.start}`.localeCompare(`${b.day}${b.start}`)).map(c=>`<div class="lesson"><div class="lesson-time"><span>${esc(c.start)}</span><small>${esc(c.end)}</small></div><div class="lesson-bar ${esc(c.colour||'purple')}"></div><div class="lesson-details"><strong>${esc(c.subject)}</strong><span>${esc(c.room)} · ${esc(c.teacher)} · ${esc(c.day)}</span></div></div>`).join(''):'<div class="empty-timetable"><div class="empty-calendar-icon">＋</div><strong>No classes have been added yet</strong><span>Your teacher can add classes from the Admin Portal.</span></div>'}
-function messages(){let m=$('#messagesModal');if(!m){m=document.createElement('div');m.id='messagesModal';m.className='messages-modal';m.innerHTML='<div class="messages-card"><div class="messages-header"><div><p>COMMUNICATION</p><h2>Direct messages</h2></div><button class="messages-close">×</button></div><div class="message-history"><div class="received">Hi! How can we help?</div></div><form class="message-form"><input required placeholder="Write a message..."><button>Send</button></form></div>';document.body.append(m);m.querySelector('.messages-close').onclick=()=>m.classList.remove('visible');m.onclick=e=>{if(e.target===m)m.classList.remove('visible')};m.querySelector('form').onsubmit=e=>{e.preventDefault();const i=e.target.querySelector('input'),b=document.createElement('div');b.className='sent';b.textContent=i.value;m.querySelector('.message-history').append(b);i.value='';toast('Message sent')}}m.classList.add('visible')}
-function section(name){document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.section===name));$('#pageTitle').textContent=name;if(name==='Timetable')$('#classList').scrollIntoView({behavior:'smooth'});else if(name==='Direct messages')messages();else toast(`${name} opened`)}
-document.addEventListener('click',e=>{const sec=e.target.closest('[data-section]');if(sec){e.preventDefault();section(sec.dataset.section)}const action=e.target.closest('[data-action]')?.dataset.action;if(action==='calendar')toast('Calendar event started');if(action==='search')toast('Search is ready');if(action==='notifications')toast('You have 3 notices');if(action==='notice')toast('Notice opened');if(action==='grades')toast('All results opened');if(e.target.closest('.mobile-menu'))$('#sidebar').classList.toggle('open');if(e.target.closest('.logout-button')){sessionStorage.removeItem('northstar-student');location.reload()}});
-$('#studentLoginForm')?.addEventListener('submit',e=>{e.preventDefault();const email=$('#studentEmail').value.trim().toLowerCase();const student=db.students.find(s=>s.email.toLowerCase()===email);if(!student){toast('That email is not registered');return}sessionStorage.setItem('northstar-student',JSON.stringify(student));renderStudent(student)});
-if(logged){const student=db.students.find(s=>s.id===logged.id||s.email===logged.email);if(student)renderStudent(student)}
+const DB = 'northstar-db';
+const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+function readDb() {
+  try {
+    const value = JSON.parse(localStorage.getItem(DB));
+    return value && Array.isArray(value.students) ? value : { students: [], teachers: [], timetables: {} };
+  } catch {
+    return { students: [], teachers: [], timetables: {} };
+  }
+}
+
+let db = readDb();
+let currentStudent = null;
+let toastTimer;
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>\"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+}
+
+function showToast(message) {
+  const element = $('#toast');
+  if (!element) return;
+  element.textContent = message;
+  element.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => element.classList.remove('show'), 2600);
+}
+
+function closeModal() {
+  $('#actionModal')?.remove();
+}
+
+function openModal(title, content, className = '') {
+  closeModal();
+  const modal = document.createElement('div');
+  modal.id = 'actionModal';
+  modal.className = `action-modal ${className}`;
+  modal.innerHTML = `<div class="action-dialog" role="dialog" aria-modal="true" aria-labelledby="actionTitle"><div class="action-dialog-header"><div><p class="section-kicker">NORTHSTAR</p><h2 id="actionTitle">${escapeHtml(title)}</h2></div><button class="modal-close" aria-label="Close">×</button></div><div class="action-dialog-body">${content}</div></div>`;
+  document.body.appendChild(modal);
+  $('.modal-close', modal).addEventListener('click', closeModal);
+  modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
+  return modal;
+}
+
+function renderTimetable() {
+  const list = $('#classList');
+  if (!list || !currentStudent) return;
+  const classes = (db.timetables?.[currentStudent.id] || currentStudent.classes || []).slice().sort((a, b) => `${a.day}${a.start}`.localeCompare(`${b.day}${b.start}`));
+  if (!classes.length) {
+    list.innerHTML = '<div class="empty-timetable"><div class="empty-calendar-icon">＋</div><strong>No classes have been added yet</strong><span>Your teacher can add classes from the Teacher Portal.</span></div>';
+    return;
+  }
+  list.innerHTML = classes.map((item) => `<button class="lesson lesson-button" type="button" data-class-id="${escapeHtml(item.id)}"><span class="lesson-time"><b>${escapeHtml(item.start)}</b><small>${escapeHtml(item.end)}</small></span><span class="lesson-bar ${escapeHtml(item.colour || 'purple')}"></span><span class="lesson-details"><strong>${escapeHtml(item.subject)}</strong><span>${escapeHtml(item.room)} · ${escapeHtml(item.teacher)} · ${escapeHtml(item.day)}</span></span><span class="lesson-arrow">›</span></button>`).join('');
+}
+
+function renderStudent(student) {
+  currentStudent = student;
+  $('#studentLogin')?.setAttribute('hidden', '');
+  $('#portalApp')?.removeAttribute('hidden');
+  const initials = student.name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+  $('#sideName').textContent = student.name;
+  $('#sideDetails').textContent = `${student.year || 'Student'} · ${student.house || 'No house'}`;
+  $('#sideInitials').textContent = initials;
+  $('#topInitials').textContent = initials;
+  $('#greeting').textContent = `Welcome back, ${student.name.split(' ')[0]}`;
+  $('#dateLabel').textContent = new Intl.DateTimeFormat('en-AU', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+  renderTimetable();
+}
+
+function openMessages() {
+  const modal = openModal('Direct messages', '<div class="message-thread"><div class="message received">Hi Jordan — remember to bring your calculator tomorrow.</div><div class="message sent">Thanks, I’ll remember!</div></div><form class="message-compose"><input required placeholder="Write a message..." aria-label="Write a message"><button class="primary-button" type="submit">Send</button></form>', 'messages-modal-content');
+  $('.message-compose', modal).addEventListener('submit', (event) => {
+    event.preventDefault();
+    const input = $('input', event.currentTarget);
+    const message = input.value.trim();
+    if (!message) return;
+    const bubble = document.createElement('div');
+    bubble.className = 'message sent';
+    bubble.textContent = message;
+    $('.message-thread', modal).appendChild(bubble);
+    input.value = '';
+    showToast('Message sent');
+  });
+}
+
+function selectSection(section) {
+  $$('.nav-item[data-section]').forEach((item) => item.classList.toggle('active', item.dataset.section === section));
+  $('#pageTitle').textContent = section === 'Overview' ? 'Dashboard' : section;
+  $('#sidebar')?.classList.remove('open');
+  if (section === 'Timetable') $('#classList')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  else if (section === 'Direct messages') openMessages();
+  else showToast(`${section} opened`);
+}
+
+function runAction(action) {
+  if (action === 'calendar') openModal('Add to calendar', '<p class="modal-copy">Choose a date and time for your event.</p><div class="modal-form-grid"><label>Event<input value="Study session"></label><label>Date<input type="date"></label><label>Time<input type="time"></label></div><button class="primary-button modal-save" type="button">Save event</button>');
+  if (action === 'search') openModal('Search Northstar', '<form class="search-form"><input autofocus placeholder="Search timetable, notices or courses"><button class="primary-button">Search</button></form><p class="modal-copy">Search is ready to use on this device.</p>');
+  if (action === 'notifications') openModal('Notifications', '<div class="notification-row"><b>3 new notices</b><span>Winter concert auditions, science trip and library hours.</span></div><div class="notification-row"><b>Timetable updated</b><span>Your teacher may have added a new class.</span></div>');
+  if (action === 'grades') openModal('All results', '<div class="result-row"><b>Mathematics</b><strong class="result-good">A</strong></div><div class="result-row"><b>English</b><strong class="result-warn">B+</strong></div><div class="result-row"><b>Biology</b><strong class="result-good">A-</strong></div>');
+  if (action === 'notice') openModal('Notice details', '<h3>Winter concert auditions</h3><p class="modal-copy">Auditions are open to Year 10 students. Speak with Student Life for times and locations.</p>');
+  if (action === 'save-event') { closeModal(); showToast('Event added to your calendar'); }
+}
+
+document.addEventListener('click', (event) => {
+  const section = event.target.closest('[data-section]');
+  if (section) { event.preventDefault(); selectSection(section.dataset.section); return; }
+  const action = event.target.closest('[data-action]')?.dataset.action;
+  if (action) { event.preventDefault(); runAction(action); return; }
+  if (event.target.closest('#menuButton')) { $('#sidebar')?.classList.toggle('open'); return; }
+  if (event.target.closest('.logout-button')) { sessionStorage.removeItem('northstar-student'); location.reload(); return; }
+  const classButton = event.target.closest('[data-class-id]');
+  if (classButton) showToast('Class details opened');
+  if (event.target.closest('.modal-save')) runAction('save-event');
+});
+
+document.addEventListener('submit', (event) => {
+  if (event.target.matches('.search-form')) {
+    event.preventDefault();
+    showToast(`Searching for “${$('input', event.target).value.trim() || 'everything'}”`);
+    closeModal();
+  }
+});
+
+$('#studentLoginForm')?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  db = readDb();
+  const email = $('#studentEmail').value.trim().toLowerCase();
+  const student = db.students.find((item) => String(item.email).toLowerCase() === email);
+  if (!student) { showToast('That email is not registered. Ask your administrator.'); return; }
+  sessionStorage.setItem('northstar-student', JSON.stringify({ id: student.id }));
+  renderStudent(student);
+});
+
+try {
+  const saved = JSON.parse(sessionStorage.getItem('northstar-student') || 'null');
+  if (saved) {
+    const student = db.students.find((item) => item.id === saved.id);
+    if (student) renderStudent(student);
+  }
+} catch { sessionStorage.removeItem('northstar-student'); }
