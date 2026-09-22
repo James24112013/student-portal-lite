@@ -1,69 +1,10 @@
-const students = [
-  { id: 'jordan-smith', name: 'Jordan Smith', year: 'Year 10 · 10A' },
-  { id: 'alex-morgan', name: 'Alex Morgan', year: 'Year 10 · 10B' },
-  { id: 'taylor-brown', name: 'Taylor Brown', year: 'Year 10 · 10A' }
-];
-const storageKey = 'northstar-timetables';
-let selectedStudent = students[0].id;
-
-const $ = (selector) => document.querySelector(selector);
-const getAll = () => { try { return JSON.parse(localStorage.getItem(storageKey)) || {}; } catch { return {}; } };
-const saveAll = (data) => localStorage.setItem(storageKey, JSON.stringify(data));
-const initials = (name) => name.split(' ').map((part) => part[0]).join('');
-const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (character) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
-
-function notify(message) {
-  const toast = $('#toast');
-  toast.textContent = message;
-  toast.classList.add('show');
-  clearTimeout(window.toastTimer);
-  window.toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
-}
-
-function renderStudents() {
-  const data = getAll();
-  $('#studentList').innerHTML = students.map((student) => {
-    const count = (data[student.id] || []).length;
-    return `<button class="student-card ${student.id === selectedStudent ? 'selected' : ''}" data-student="${student.id}"><span class="student-avatar">${initials(student.name)}</span><span><b>${student.name}</b><small>${student.year}</small></span><span class="class-total">${count} classes</span></button>`;
-  }).join('');
-  document.querySelectorAll('[data-student]').forEach((button) => button.addEventListener('click', () => {
-    selectedStudent = button.dataset.student;
-    render();
-  }));
-}
-
-function renderClasses() {
-  const student = students.find((item) => item.id === selectedStudent);
-  const classes = getAll()[selectedStudent] || [];
-  $('#selectedStudentTitle').textContent = `${student.name} · ${student.year}`;
-  if (!classes.length) {
-    $('#classTable').innerHTML = '<div class="empty">No classes assigned to this student yet.</div>';
-    return;
-  }
-  const rows = classes.slice().sort((a, b) => `${a.day}${a.start}`.localeCompare(`${b.day}${b.start}`));
-  $('#classTable').innerHTML = `<div class="class-row header"><span>Day / time</span><span>Subject</span><span>Room / teacher</span><span>Colour</span><span></span></div>` + rows.map((item) => `<div class="class-row"><span>${escapeHtml(item.day)}<br>${escapeHtml(item.start)}–${escapeHtml(item.end)}</span><b>${escapeHtml(item.subject)}</b><span>${escapeHtml(item.room)}<br>${escapeHtml(item.teacher)}</span><span><i class="colour-pill ${item.colour}"></i></span><button class="remove-button" data-remove="${item.id}">Remove</button></div>`).join('');
-  document.querySelectorAll('[data-remove]').forEach((button) => button.addEventListener('click', () => removeClass(button.dataset.remove)));
-}
-
-function render() { renderStudents(); renderClasses(); }
-
-function removeClass(id) {
-  const all = getAll();
-  all[selectedStudent] = (all[selectedStudent] || []).filter((item) => item.id !== id);
-  saveAll(all); render(); notify('Class removed');
-}
-
-$('#classForm').addEventListener('submit', (event) => {
-  event.preventDefault();
-  const all = getAll();
-  const item = { id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), subject: $('#subject').value.trim(), day: $('#day').value, start: $('#start').value, end: $('#end').value, room: $('#room').value.trim(), teacher: $('#teacher').value.trim(), colour: $('#colour').value };
-  all[selectedStudent] = [...(all[selectedStudent] || []), item];
-  saveAll(all); event.target.reset(); render(); notify(`${item.subject} added to the timetable`);
-});
-
-$('#clearButton').addEventListener('click', () => {
-  if (!confirm('Clear every class for this student?')) return;
-  const all = getAll(); all[selectedStudent] = []; saveAll(all); render(); notify('Timetable cleared');
-});
-
-render();
+const DB='northstar-db',PASS='160382';let db;const $=s=>document.querySelector(s),esc=v=>String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));const read=()=>{try{return JSON.parse(localStorage.getItem(DB))||{students:[],teachers:[],timetables:{}}}catch{return {students:[],teachers:[],timetables:{}}}};const save=()=>localStorage.setItem(DB,JSON.stringify(db));const id=()=>crypto.randomUUID?crypto.randomUUID():String(Date.now());function toast(m){const x=$('#toast');x.textContent=m;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),2200)}
+function renderAccounts(){const s=$('#account');s.innerHTML='<option value="admin">Administrator</option>'+db.teachers.filter(t=>t.id!=='admin').map(t=>`<option value="${esc(t.id)}">${esc(t.name)} · Teacher</option>`).join('')}
+function renderStudents(){const s=$('#studentList');s.innerHTML=db.students.map(x=>`<div class="management-row"><div><b>${esc(x.name)}</b><small>${esc(x.email)} · ${esc(x.year)} · House: ${esc(x.house)} · Faction: ${esc(x.faction)}</small></div><button data-edit-student="${x.id}">Edit</button><button class="danger-text" data-delete-student="${x.id}">Remove</button></div>`).join('')||'<p>No students yet.</p>';$('#classStudent').innerHTML=db.students.map(x=>`<option value="${x.id}">${esc(x.name)} · ${esc(x.email)}</option>`).join('')}
+function renderTeachers(){$('#teacherList').innerHTML=db.teachers.filter(x=>x.id!=='admin').map(x=>`<div class="management-row"><div><b>${esc(x.name)}</b><small>${esc(x.email)}</small></div><button class="danger-text" data-delete-teacher="${x.id}">Remove</button></div>`).join('')||'<p>No additional teachers yet.</p>'}
+function renderClasses(){const sid=$('#classStudent').value;const list=db.timetables[sid]||[];$('#classList').innerHTML=list.map(x=>`<div class="management-row"><div><b>${esc(x.subject)}</b><small>${esc(x.day)} ${esc(x.start)}–${esc(x.end)} · ${esc(x.room)} · ${esc(x.teacher)}</small></div><button class="danger-text" data-delete-class="${x.id}">Remove</button></div>`).join('')||'<p>No classes assigned.</p>'}
+function render(){renderAccounts();renderStudents();renderTeachers();renderClasses()}
+$('#loginForm').addEventListener('submit',e=>{e.preventDefault();if($('#password').value!==PASS){toast('Incorrect password');return}sessionStorage.setItem('northstar-admin',$('#account').value);$('#login').remove();$('#adminApp').hidden=false;render()});$('#signOut').onclick=()=>{sessionStorage.removeItem('northstar-admin');location.reload()};
+document.addEventListener('click',e=>{const tab=e.target.closest('[data-tab]');if(tab){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(x=>x.hidden=true);tab.classList.add('active');$('#'+tab.dataset.tab+'Tab').hidden=false;return}const edit=e.target.closest('[data-edit-student]');if(edit){const x=db.students.find(s=>s.id===edit.dataset.editStudent);$('#studentId').value=x.id;$('#studentName').value=x.name;$('#studentEmailAdmin').value=x.email;$('#studentYear').value=x.year;$('#studentHouse').value=x.house||'';$('#studentFaction').value=x.faction||''}const ds=e.target.closest('[data-delete-student]');if(ds&&confirm('Remove this student?')){db.students=db.students.filter(x=>x.id!==ds.dataset.deleteStudent);delete db.timetables[ds.dataset.deleteStudent];save();render();toast('Student removed')}const dt=e.target.closest('[data-delete-teacher]');if(dt&&confirm('Remove this teacher?')){db.teachers=db.teachers.filter(x=>x.id!==dt.dataset.deleteTeacher);save();render();toast('Teacher removed')}const dc=e.target.closest('[data-delete-class]');if(dc){const sid=$('#classStudent').value;db.timetables[sid]=(db.timetables[sid]||[]).filter(x=>x.id!==dc.dataset.deleteClass);save();renderClasses();toast('Class removed')}});
+$('#studentForm').addEventListener('submit',e=>{e.preventDefault();const item={id:$('#studentId').value||id(),name:$('#studentName').value.trim(),email:$('#studentEmailAdmin').value.trim().toLowerCase(),year:$('#studentYear').value.trim(),house:$('#studentHouse').value.trim(),faction:$('#studentFaction').value.trim()};const i=db.students.findIndex(x=>x.id===item.id);if(i<0)db.students.push(item);else db.students[i]=item;save();e.target.reset();$('#studentId').value='';render();toast('Student saved')});$('#cancelStudent').onclick=()=>{$('#studentForm').reset();$('#studentId').value=''};$('#teacherForm').addEventListener('submit',e=>{e.preventDefault();db.teachers.push({id:id(),name:$('#teacherName').value.trim(),email:$('#teacherEmail').value.trim().toLowerCase(),role:'Teacher'});save();e.target.reset();render();toast('Teacher added')});$('#classStudent').addEventListener('change',renderClasses);$('#classForm').addEventListener('submit',e=>{e.preventDefault();const sid=$('#classStudent').value;if(!sid)return;const item={id:id(),subject:$('#subject').value.trim(),day:$('#day').value,start:$('#start').value,end:$('#end').value,room:$('#room').value.trim(),teacher:$('#teacher').value.trim(),colour:$('#colour').value};db.timetables[sid]=[...(db.timetables[sid]||[]),item];save();e.target.reset();renderClasses();toast('Class added')});
+if(sessionStorage.getItem('northstar-admin')){$('#login').remove();$('#adminApp').hidden=false;db=read();render()}else{db=read();renderAccounts()}
